@@ -1,16 +1,40 @@
 const express = require("express");
-const database = require("./database/database");
+const bodyParser = require("body-parser");
+const sequelize = require("./database/database");
+// models
+const UserModel = require('./model/UserModel');
 
 // router
-const UsersRoute = require("./router/Users");
-
 const app = express();
+const UsersRoute = require("./router/UserRoute");
 
+app.use(bodyParser.json());
 
-// register router 
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader(
+        "Access-Control-Allow-Methods",
+        "OPTIONS, GET, POST, PUT, PATCH, DELETE"
+    );
+    res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization"
+    );
+    next();
+});
+
+// register router
 app.use(UsersRoute);
 
-
-app.listen(3005, () => {
-    console.log("node js started on http://localhost:3005");
-});
+sequelize.sync()
+    .then((data) => {
+        // console.log(data);
+        app.listen(3005, () => {
+            console.log(
+                "database stablished application on http://localhost:3005"
+            );
+        });
+    })
+    .catch((error) => {
+        console.log("database connection fail, application not started");
+    });
